@@ -31,6 +31,7 @@ import re
 import threading
 import time
 import traceback
+import sys
 
 from absl import flags as absl_flags
 import numpy as np
@@ -871,6 +872,11 @@ def benchmark_one_step(sess,
             'top_1_accuracy', results['top_1_accuracy'], global_step=step + 1)
         benchmark_logger.log_metric(
             'top_5_accuracy', results['top_5_accuracy'], global_step=step + 1)
+            
+  #sendtofile func
+  if (step + 1 == 1) or ((step + 1) % 5 == 0):
+    sendtofile(step + 1, results['average_loss'], results['top_1_accuracy'], results['top_5_accuracy'])
+  
   if need_options_and_metadata:
     if should_profile:
       profiler.add_step(step, run_metadata)
@@ -3511,3 +3517,12 @@ def maybe_compile(computation, params):
     return xla.compile(computation)
   else:
     return computation()
+
+def sendtofile(step, lossval, top_1_accuracy, top_5_accuracy):
+    file = open("data.txt", 'a')
+    console = sys.stdout
+    sys.stdout = file
+    data = [step, lossval, top_1_accuracy, top_5_accuracy]
+    print(data)
+    sys.stdout = console
+    file.close()
